@@ -45,7 +45,7 @@ module weight_storage (
         end else if (!mode_prog) begin
             bit_cnt <= 8'b0;
         end
-    end
+    endw
 endmodule
 
 module synapse_matrix (
