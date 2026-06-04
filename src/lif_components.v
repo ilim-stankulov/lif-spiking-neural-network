@@ -42,10 +42,8 @@ module weight_storage (
         end else if (mode_prog && s_clk_en) begin
             weights <= {weights[126:0], s_data};
             if (bit_cnt < 128) bit_cnt <= bit_cnt + 1;
-        end else if (!mode_prog) begin
-            bit_cnt <= 8'b0;
         end
-    endw
+    end
 endmodule
 
 module synapse_matrix (
@@ -53,12 +51,14 @@ module synapse_matrix (
     output wire signed [7:0] i0, output wire signed [7:0] i1, 
     output wire signed [7:0] i2, output wire signed [7:0] i3
 );
-    function signed [7:0] calc(input [7:0] s, input [31:0] weights);
+    function signed [7:0] calc;
+        input [7:0] s;
+        input [31:0] weights;
         integer i;
         reg signed [7:0] sum;
         begin
-            sum = 0;
-            for (i=0; i<8; i=i+1) begin
+            sum = 8'sd0;
+            for (i = 0; i < 8; i = i + 1) begin
                 if (s[i]) sum = sum + $signed(weights[i*4 +: 4]);
             end
             calc = sum;

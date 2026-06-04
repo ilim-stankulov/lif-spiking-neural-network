@@ -3,7 +3,7 @@ project:
   title:        "4-Neuron LIF Spiking Neural Network"
   author:       "Ilim Stankulov"
   discord:      "aprickwithaguitar"
-  description:  "A 4-neuron spiking neural network implementing the LIF model"
+  description:  "A simple 4-neuron spiking neural network implementing the LIF model"
   language:     "Verilog"
   clock_hz:     10000000
 
