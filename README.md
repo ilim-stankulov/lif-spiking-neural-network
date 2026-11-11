@@ -8,6 +8,18 @@ Each neuron implements the Leaky Integrate-and-Fire model — intake input curre
 fire when the voltage reaches threshold. The four neurons are fully connected through a programmable
 weight matrix.
 
+## Known limitations of v1 (TTGF26b, project 71)
+
+- The top level has no stimulus input. All synaptic input comes from the
+  neurons' own outputs, so after reset the network stays at rest and never
+  spikes, whatever weights are programmed.
+- The original tests checked reset, programming and X/Z, but never asserted
+  that a neuron spikes. `test_spikes_with_max_weights` exposed this.
+- Membrane potentials are not observable on any pin.
+- v2 (this version) adds four stimulus inputs on `ui[7:4]`, the observed
+  neuron's membrane potential on `uio[7:0]`, and saturating arithmetic.
+  The design as taped out on TTGF26b is preserved in the `v1-ttgf26b` tag.
+
 ## How to use
 
 1. Reset the chip

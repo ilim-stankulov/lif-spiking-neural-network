@@ -1,12 +1,15 @@
 `default_nettype none
 
 module lif_neuron #(parameter THRESH = 8'sd64, SHIFT = 3) (
-    input  wire clk, input  wire rst_n, input  wire ena,
-    input  wire signed [7:0] current_in,
-    output reg  spike, output reg signed [7:0] v_mem
+    input wire clk, input wire rst_n, input wire ena,
+    input wire signed [7:0] current_in,
+    output reg spike, output reg signed [7:0] v_mem
 );
     wire signed [7:0] leak = v_mem >>> SHIFT;
-    wire signed [7:0] v_next = v_mem - leak + current_in;
+    wire signed [9:0] v_sum = v_mem - leak + current_in;
+    wire signed [7:0] v_next = (v_sum > 10'sd127) ? 8'sd127 :
+        (v_sum < -10'sd128) ? -8'sd128 :
+        v_sum[7:0];
 
     always @(posedge clk) begin
         if (!rst_n) begin
@@ -16,7 +19,7 @@ module lif_neuron #(parameter THRESH = 8'sd64, SHIFT = 3) (
             if (spike) begin
                 v_mem <= 8'sd0;
                 spike <= 1'b0;
-            end else if (v_next >= THRESH) begin
+            end else if (v_sum >= THRESH) begin
                 v_mem <= 8'sd0;
                 spike <= 1'b1;
             end else begin
@@ -28,9 +31,9 @@ module lif_neuron #(parameter THRESH = 8'sd64, SHIFT = 3) (
 endmodule
 
 module weight_storage (
-    input  wire clk, input  wire rst_n, input  wire s_data, 
-    input  wire s_clk_en, input  wire mode_prog,
-    output reg  [127:0] weights, output wire prog_done
+    input wire clk, input wire rst_n, input wire s_data,
+    input wire s_clk_en, input wire mode_prog,
+    output reg [127:0] weights, output wire prog_done
 );
     reg [7:0] bit_cnt;
     assign prog_done = (bit_cnt == 8'd128);
@@ -47,8 +50,8 @@ module weight_storage (
 endmodule
 
 module synapse_matrix (
-    input  wire [7:0] all_spikes, input  wire [127:0] w,
-    output wire signed [7:0] i0, output wire signed [7:0] i1, 
+    input wire [7:0] all_spikes, input wire [127:0] w,
+    output wire signed [7:0] i0, output wire signed [7:0] i1,
     output wire signed [7:0] i2, output wire signed [7:0] i3
 );
     function signed [7:0] calc;
