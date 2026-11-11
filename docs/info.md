@@ -17,7 +17,9 @@ V[t+1] = V[t] - V[t]/8 + I[t]
 
 Once the voltage inside a neuron reaches 64, it fires a spike and resets its membrane potential to 0.
 
-Every neuron's spike feeds back into other neurons through a weight matrix. If the connection weights are positive, they push the voltage towards the threshold, if they are negative, they pull the voltage away from the threshold.
+Each neuron has eight synapses: four from the other neurons' spikes and four from external
+stimulus inputs on ui[7:4]. Positive weights push the membrane potential towards threshold,
+negative weights pull it away. The potential saturates at -128 and 127 instead of wrapping.
 
 ## How to test
 
@@ -25,7 +27,11 @@ Every neuron's spike feeds back into other neurons through a weight matrix. If t
 
 2) Assert ui[2] high (mode_prog = 1). Shift in 128 bits MSB-first by toggling ui[1] (s_clk_en) while driving ui[0] (s_data) with each bit. After 128 bits, uo[4] (prog_done) goes high confirming the weight matrix is fully loaded. De-assert ui[2].
 
-3) Assert ena = 1. Spike outputs appear on uo[3:0], one bit per neuron. Behavior depends entirely on the programmed weights — zero weights produce silence, positive weights produce excitation, negative weights produce inhibition.
+3) Assert ena = 1 and drive one or more stimulus inputs high on ui[7:4]. Spike outputs appear
+on uo[3:0], one bit per neuron. With all stimulus inputs low the network stays at rest.
+
+4) Pulse ui[3] to step through the neurons; uo[6:5] shows which neuron is selected and
+uio[7:0] shows its membrane potential as a signed 8-bit value.
 
 ## External hardware
 

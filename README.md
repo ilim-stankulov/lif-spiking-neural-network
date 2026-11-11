@@ -4,37 +4,31 @@
 
 A 4-neuron spiking neural network on GF180nm, submitted to Tiny Tapeout.
 
-Each neuron implements the Leaky Integrate-and-Fire model — intake input current, leak over each clock cycle,
-fire when the voltage reaches threshold. The four neurons are fully connected through a programmable
-weight matrix.
-
-## Known limitations of v1 (TTGF26b, project 71)
-
-- The top level has no stimulus input. All synaptic input comes from the
-  neurons' own outputs, so after reset the network stays at rest and never
-  spikes, whatever weights are programmed.
-- The original tests checked reset, programming and X/Z, but never asserted
-  that a neuron spikes. `test_spikes_with_max_weights` exposed this.
-- Membrane potentials are not observable on any pin.
-- v2 (this version) adds four stimulus inputs on `ui[7:4]`, the observed
-  neuron's membrane potential on `uio[7:0]`, and saturating arithmetic.
-  The design as taped out on TTGF26b is preserved in the `v1-ttgf26b` tag.
+Each neuron implements the Leaky Integrate-and-Fire model: it integrates input current,
+leaks a fraction of its membrane potential every clock cycle, and fires when the potential
+reaches threshold. Each neuron has eight programmable synapses: four from the other neurons
+and four from external stimulus inputs.
 
 ## How to use
 
 1. Reset the chip
 2. Program 128 weight bits via the serial interface
-3. Enable the network and observe spikes on the output pins
+3. Drive stimulus spikes on `ui[7:4]` and observe spikes on `uo[3:0]`
+4. Pulse `ui[3]` to choose which neuron's membrane potential appears on `uio[7:0]`
 
 See [docs/info.md](docs/info.md) for full documentation.
 
 ## Pin mapping
 
-Inputs: 
-`ui[0]` - serial weight data
-`ui[1]` - serial clock enable
-`ui[2]` - programming mode.
+Inputs
+- `ui[0]` serial weight data
+- `ui[1]` serial clock enable
+- `ui[2]` programming mode
+- `ui[3]` step to the next observed neuron
+- `ui[7:4]` external stimulus spikes
 
-Outputs: 
-`uo[0..3]` - spike outputs for each neuron
-`uo[4]` - goes high when weight programming is complete.
+Outputs
+- `uo[3:0]` spike outputs, one per neuron
+- `uo[4]` high when weight programming is complete
+- `uo[6:5]` index of the observed neuron
+- `uio[7:0]` membrane potential of the observed neuron
